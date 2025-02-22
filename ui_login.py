@@ -6,8 +6,9 @@ from ui_admin import open_admin_dashboard
 from database import obtener_conexion
 from recursos import obtener_ruta_recurso
 from ui_regis import registrar
-        
-def mostrar_login_paciente(ventana_seleccion):
+from funciones import mostrar_seleccion_tipo
+
+def mostrar_login_paciente():
     def login():
         username = dni.get()
         password = passw.get()
@@ -18,44 +19,41 @@ def mostrar_login_paciente(ventana_seleccion):
         usuario = c.fetchone()
 
         if usuario and password == usuario[7]:  # Contraseña simple para ejemplo
-            open_patient_dashboard()
+            usuario_id = usuario[0]  # Recupera el ID del usuario desde la base de datos
             root.destroy()  # Cierra la ventana de login
+            open_patient_dashboard(usuario_id)  # Pasa el usuario_id a la interfaz del paciente
         else:
             messagebox.showerror("Error", "Credenciales incorrectas")
+            
 
-    root = tk.Toplevel()
+    root = tk.Tk()  # Usar Tk() en lugar de Toplevel()
     root.title("Inicio de Sesión - Paciente")
-    root.geometry("800x620")
+    root.geometry("800x620")  # Ajustar el tamaño de la ventana
 
-    ruta_fondo_2 = obtener_ruta_recurso("img_recursos/fondo1.jpg")
+    # Cargar imágenes para los íconos
     ruta_user = obtener_ruta_recurso("img_recursos/rec1.png")
     ruta_pass = obtener_ruta_recurso("img_recursos/rec2.png")
     
-    img_fondo = ImageTk.PhotoImage(Image.open(ruta_fondo_2).resize((800, 620)))
-
+    icono_dni = ImageTk.PhotoImage(Image.open(ruta_user).resize((30, 30)))  # Cédula
+    icono_pass = ImageTk.PhotoImage(Image.open(ruta_pass).resize((30, 30)))  # Contraseña
+    
     # Canvas para la imagen de fondo
     canvas1 = tk.Canvas(root, width=800, height=620)
     canvas1.pack(fill="both", expand=True)
-
-    # Coloca la imagen en el canvas
-    canvas1.create_image(0, 0, anchor="nw", image=img_fondo)
 
     # Titulo
     titulo = tk.Label(canvas1, text="Iniciar Sesión", fg="white", font=("Comic Sans", 16, "bold"), bg="steel blue", pady=5)
     titulo.pack(pady=20)
 
-    # Intruccion Cédula
+    # Cédula
     label_ced = tk.Label(canvas1, text="Cédula: ", fg="white", font=("Comic Sans", 16, "bold"), bg="steel blue", pady=5)
     label_ced.pack(pady=5)
-    
+
     # Contenedor para el campo de cédula con el icono
     frame_dni = tk.Frame(canvas1, bg="steel blue", pady=5)
     frame_dni.pack()
 
-    # Cargar el icono de cédula
-    icono_dni = ImageTk.PhotoImage(Image.open(ruta_user).resize((30, 30)))
-
-    # Mostrar la imagen del icono
+    # Mostrar la imagen del icono de cédula
     icono_label = tk.Label(frame_dni, image=icono_dni, fg="white", font=("Comic Sans", 16, "bold"), bg="steel blue", pady=5)
     icono_label.pack(side="left")
 
@@ -63,44 +61,34 @@ def mostrar_login_paciente(ventana_seleccion):
     dni = tk.Entry(frame_dni, width=20, font=("Comic Sans", 14, "bold"))
     dni.pack(side="left", padx=5)
     
-    # Contenedor para el campo de password con el icono
+    # Contraseña
     label_password = tk.Label(canvas1, text="Contraseña: ", fg="white", font=("Comic Sans", 16, "bold"), bg="steel blue", pady=5)
     label_password.pack(pady=5)
-    
-    # Contenedor para el campo pass
-    frame_pass= tk.Frame(canvas1, bg="steel blue", pady=5)
+
+    # Contenedor para el campo de contraseña con el icono
+    frame_pass = tk.Frame(canvas1, bg="steel blue", pady=5)
     frame_pass.pack()
 
-    # Cargar el icono de pass
-    icono_pass = ImageTk.PhotoImage(Image.open(ruta_pass).resize((30, 30)))
-
-    # Crear un label para mostrar la imagen
+    # Mostrar la imagen del icono de contraseña
     icono_label_pass = tk.Label(frame_pass, image=icono_pass, bg="steel blue", pady=5)
     icono_label_pass.pack(side="left")
 
-    # Caja para ingresar pass
+    # Caja para ingresar la contraseña
     passw = tk.Entry(frame_pass, width=20, font=("Comic Sans", 14, "bold"), show="*")
     passw.pack(side="left", padx=5)
 
     # Botón para verificar
     boton_verificar = tk.Button(canvas1, text="Iniciar Sesión", command=login, height=2, width=15, bg="sea green", fg="white", font=("Comic Sans", 10, "bold"))
     boton_verificar.pack(pady=20)
-    
-    # Intruccion registro
-    label_reg = tk.Label(canvas1, text="¿Eres un paciente nuevo?", fg="white", font=("Comic Sans", 12, "bold italic"), bg="blue2", pady=5)
-    label_reg.pack(pady=5)
-    
-    # Botón para abrir el registro
-    boton_registro = tk.Button(canvas1, text="Registrarse", command=registrar, height=2, width=15, bg="SkyBlue3", fg="white", font=("Comic Sans", 10, "bold"))
-    boton_registro.pack(padx=50, pady=20)
 
-    # Botón para salir de la aplicación
-    boton_salir = tk.Button(canvas1, text="Regresar", command=lambda: regresar(ventana_seleccion, root), height=2, width=10, bg="red", fg="white", font=("Comic Sans", 10, "bold"))
-    boton_salir.pack(padx=50, pady=20)
+    # Botón para regresar a la selección de tipo de usuario
+    boton_salir = tk.Button(canvas1, text="Regresar", command= lambda: [root.destroy(), mostrar_seleccion_tipo()], height=2, width=10, bg="red", fg="white", font=("Comic Sans", 10, "bold"))
+    boton_salir.pack(pady=20)
 
     root.mainloop()
 
-def mostrar_login_admin(ventana_seleccion):  # Acepta el argumento
+
+def mostrar_login_admin():
     def login():
         username = dni.get()
         password = passw.get()
@@ -116,75 +104,63 @@ def mostrar_login_admin(ventana_seleccion):  # Acepta el argumento
         else:
             messagebox.showerror("Error", "Credenciales incorrectas")
 
-    root = tk.Toplevel()
-    root.title("Inicio de Sesión - Paciente")
-    root.geometry("800x620")
+    root = tk.Tk()  # Usar Tk() en lugar de Toplevel()
+    root.title("Inicio de Sesión - Administrador")
+    root.geometry("800x620")  # Ajustar el tamaño de la ventana
 
-    ruta_fondo_2 = obtener_ruta_recurso("img_recursos/fondo1.jpg")
+    # Cargar imágenes para los íconos
     ruta_user = obtener_ruta_recurso("img_recursos/rec1.png")
     ruta_pass = obtener_ruta_recurso("img_recursos/rec2.png")
     
-    img_fondo = ImageTk.PhotoImage(Image.open(ruta_fondo_2).resize((800, 620)))
+    icono_dni = ImageTk.PhotoImage(Image.open(ruta_user).resize((30, 30)))  # Cédula
+    icono_pass = ImageTk.PhotoImage(Image.open(ruta_pass).resize((30, 30)))  # Contraseña
 
     # Canvas para la imagen de fondo
     canvas1 = tk.Canvas(root, width=800, height=620)
     canvas1.pack(fill="both", expand=True)
 
-    # Coloca la imagen en el canvas
-    canvas1.create_image(0, 0, anchor="nw", image=img_fondo)
-
     # Titulo
     titulo = tk.Label(canvas1, text="Iniciar Sesión", fg="white", font=("Comic Sans", 16, "bold"), bg="steel blue", pady=5)
     titulo.pack(pady=20)
 
-    # Intruccion Cédula
+    # Cédula
     label_ced = tk.Label(canvas1, text="Cédula: ", fg="white", font=("Comic Sans", 16, "bold"), bg="steel blue", pady=5)
     label_ced.pack(pady=5)
-    
+
     # Contenedor para el campo de cédula con el icono
     frame_dni = tk.Frame(canvas1, bg="steel blue", pady=5)
     frame_dni.pack()
 
-    # Cargar el icono de cédula
-    icono_dni = ImageTk.PhotoImage(Image.open(ruta_user).resize((30, 30)))
-
-    # Mostrar la imagen del icono
+    # Mostrar la imagen del icono de cédula
     icono_label = tk.Label(frame_dni, image=icono_dni, fg="white", font=("Comic Sans", 16, "bold"), bg="steel blue", pady=5)
     icono_label.pack(side="left")
 
     # Caja para ingresar el número de cédula
     dni = tk.Entry(frame_dni, width=20, font=("Comic Sans", 14, "bold"))
     dni.pack(side="left", padx=5)
-    
-    # Contenedor para el campo de password con el icono
+
+    # Contraseña
     label_password = tk.Label(canvas1, text="Contraseña: ", fg="white", font=("Comic Sans", 16, "bold"), bg="steel blue", pady=5)
     label_password.pack(pady=5)
-    
-    # Contenedor para el campo pass
-    frame_pass= tk.Frame(canvas1, bg="steel blue", pady=5)
+
+    # Contenedor para el campo de contraseña con el icono
+    frame_pass = tk.Frame(canvas1, bg="steel blue", pady=5)
     frame_pass.pack()
 
-    # Cargar el icono de pass
-    icono_pass = ImageTk.PhotoImage(Image.open(ruta_pass).resize((30, 30)))
-
-    # Crear un label para mostrar la imagen
+    # Mostrar la imagen del icono de contraseña
     icono_label_pass = tk.Label(frame_pass, image=icono_pass, bg="steel blue", pady=5)
     icono_label_pass.pack(side="left")
 
-    # Caja para ingresar pass
+    # Caja para ingresar la contraseña
     passw = tk.Entry(frame_pass, width=20, font=("Comic Sans", 14, "bold"), show="*")
     passw.pack(side="left", padx=5)
 
     # Botón para verificar
     boton_verificar = tk.Button(canvas1, text="Iniciar Sesión", command=login, height=2, width=15, bg="sea green", fg="white", font=("Comic Sans", 10, "bold"))
     boton_verificar.pack(pady=20)
-    
-    # Botón para salir de la aplicación
-    boton_salir = tk.Button(canvas1, text="Regresar", command=lambda: regresar(ventana_seleccion, root), height=2, width=10, bg="red", fg="white", font=("Comic Sans", 10, "bold"))
-    boton_salir.pack(padx=50, pady=20)
+
+    # Botón para regresar a la selección de tipo de usuario
+    boton_salir = tk.Button(canvas1, text="Regresar", command= lambda: [root.destroy(), mostrar_seleccion_tipo()], height=2, width=10, bg="red", fg="white", font=("Comic Sans", 10, "bold"))
+    boton_salir.pack(pady=20)
 
     root.mainloop()
-
-def regresar(ventana_seleccion, ventana_login):
-    ventana_login.destroy()  # Cierra la ventana de login
-    ventana_seleccion.deiconify()  # Hace visible la ventana de selección

@@ -2,21 +2,23 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from PIL import ImageTk, Image
 from recursos import obtener_ruta_recurso
-from tkcalendar import Calendar
+from tkcalendar import DateEntry
 import sqlite3
+import re
+
 
 # Globales para las entradas de texto
 dni, nombres, apellidos, combo_sexo, calendario, correo, password, repetir_password = None, None, None, None, None, None, None, None
 
 def registrar():
-    global dni, nombres, apellidos, combo_sexo, calendario, correo, password, repetir_password
+    global dni, nombres, apellidos, combo_sexo, calendario, correo, password, repetir_password  # Asegúrate de declarar las variables globales
     # Ventana secundaria para el registro
     regis = tk.Toplevel() 
-    regis.title("REGISTRO BANCARIO")
+    regis.title("REGISTRO PACIENTES")
     regis.geometry("380x620")
     
     # Título
-    titulo= tk.Label(regis, text="REGISTRO DE USUARIO",fg="black",font=("Comic Sans", 13,"bold"),pady=5)
+    titulo= tk.Label(regis, text="REGISTRO DE PACIENTE",fg="black",font=("Comic Sans", 13,"bold"),pady=5)
     titulo.grid(row=0, column=0, columnspan=1, padx=10, pady=5)
 
     # Marco principal
@@ -56,15 +58,14 @@ def registrar():
     combo_sexo.current(0)
     combo_sexo.grid(row=3,column=1,padx=10,pady=8)
     
-    # Calendario para la fecha de nacimiento
+    # Calendario desplegable para la fecha de nacimiento
     label_fecha_nacimiento = tk.Label(marco, text="Fecha de nacimiento: ", font=("Comic Sans", 10,"bold"))
     label_fecha_nacimiento.grid(row=4, column=0, sticky='s', padx=10, pady=8)
-    
-    # Crear un calendario para seleccionar la fecha
-    calendario = Calendar(marco, selectmode="day", date_pattern="dd/mm/yyyy", width=20, font=("Comic Sans", 10))
+
+    calendario = DateEntry(marco, width=22, date_pattern="dd/mm/yyyy", font=("Comic Sans", 10))
     calendario.grid(row=4, column=1, padx=10, pady=8)
 
-    label_correo=tk.Label(marco,text="Correo electronico: ",font=("Comic Sans", 10,"bold")).grid(row=5,column=0,sticky='s',padx=10,pady=8)
+    label_correo=tk.Label(marco,text="Correo electrónico: ",font=("Comic Sans", 10,"bold")).grid(row=5,column=0,sticky='s',padx=10,pady=8)
     correo=tk.Entry(marco,width=25)
     correo.grid(row=5, column=1, padx=10, pady=8)
 
@@ -85,12 +86,10 @@ def registrar():
     boton_limpiar=tk.Button(frame_botones,text="LIMPIAR",command=Limpiar_formulario ,height=2,width=10,bg="gray",fg="white",font=("Comic Sans", 10,"bold")).grid(row=0, column=2, padx=10, pady=15)
     boton_cancelar=tk.Button(frame_botones,text="CERRAR",command=regis.destroy, height=2,width=10,bg="red",fg="white",font=("Comic Sans", 10,"bold")).grid(row=0, column=3, padx=10, pady=15)
 
-# Función para obtener la fecha seleccionada y convertirla
+# Función para obtener la fecha seleccionada
 def obtener_fecha():
-    fecha_seleccionada = calendario.get_date()  # Devuelve la fecha en formato dd/mm/yyyy
-    fecha_convertida = "/".join(reversed(fecha_seleccionada.split("/")))  # Convertir a yyyy-mm-dd
-    return fecha_convertida
-    
+    return calendario.get_date()  # Devuelve la fecha en formato dd/mm/yyyy
+
 # Método para ejecutar una consulta en la base de datos
 def Ejecutar_consulta_user(consulta_user, parameters_user=()):
     with sqlite3.connect('clinica.db') as conexion:
@@ -104,58 +103,74 @@ def Limpiar_formulario():
     dni.delete(0, tk.END)
     nombres.delete(0, tk.END)
     apellidos.delete(0, tk.END)
-    combo_sexo.set('')  # Restablecer el combobox
+    combo_sexo.set('')  
     correo.delete(0, tk.END)
     password.delete(0, tk.END)
     repetir_password.delete(0, tk.END)
 
-# Método para validar que el formulario esté completo
 def Validar_formulario_completo():
-    if len(dni.get()) != 0 and len(nombres.get()) != 0 and len(apellidos.get()) != 0 and len(combo_sexo.get()) != 0 and len(correo.get()) != 0 and len(password.get()) != 0 and len(repetir_password.get()) != 0:
-        if not dni.get().isdigit():
-            messagebox.showerror("ERROR EN REGISTRO", "El DNI debe ser un número.")
-            return False
-        return True
-    else:
-        messagebox.showerror("ERROR EN REGISTRO", "Complete todos los campos del formulario")
+    # Verifica que todos los campos tengan contenido válido
+    for field in [dni, nombres, apellidos, correo, password, repetir_password, combo_sexo, calendario]:
+        # Si el campo es un Entry o un Combobox, verificamos su valor
+        if isinstance(field, tk.Entry):
+            if len(field.get()) == 0:
+                messagebox.showerror("ERROR", "Complete todos los campos.")
+                return False
+        elif isinstance(field, ttk.Combobox):
+            if not field.get():  # Verifica si el ComboBox tiene un valor seleccionado
+                messagebox.showerror("ERROR", "Seleccione un sexo.")
+                return False
+        elif isinstance(field, DateEntry):
+            if not field.get_date():  # Verifica si se ha seleccionado una fecha en el calendario
+                messagebox.showerror("ERROR", "Seleccione una fecha de nacimiento.")
+                return False
+    
+    # Verifica que el DNI sea un número
+    if not dni.get().isdigit():
+        messagebox.showerror("ERROR", "El DNI debe ser un número.")
         return False
 
-# Método para validar que las contraseñas coincidan
-def Validar_contraseña():
-    if password.get() == repetir_password.get():
-        return True
-    else:
-        messagebox.showerror("ERROR EN REGISTRO", "Contraseñas no coinciden")
+    # Verifica que el DNI tenga 10 dígitos
+    if len(dni.get()) != 10:
+        messagebox.showerror("ERROR", "El DNI debe tener 10 dígitos.")
         return False
 
-# Método para verificar si el DNI ya está registrado
+    # Verifica que las contraseñas coincidan
+    if password.get() != repetir_password.get():
+        messagebox.showerror("ERROR", "Las contraseñas no coinciden.")
+        return False
+    
+        # Validación del correo electrónico
+    correo_usuario = correo.get()
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", correo_usuario):
+        messagebox.showerror("ERROR", "El correo electrónico no tiene un formato válido.")
+        return False
+    
+    return True
+
+
+# Método para validar el DNI
 def Validar_dni():
-    dni_input = dni.get()
+    dni_usuario = dni.get()
     with sqlite3.connect('clinica.db') as conexion:
         cursor = conexion.cursor()
-        cursor.execute("SELECT * FROM usuarios WHERE Cedula = ?", (dni_input,))
-        dnix = cursor.fetchall()
-        if len(dnix) > 0:
-            messagebox.showerror("ERROR EN REGISTRO", "DNI registrado anteriormente")
+        cursor.execute("SELECT * FROM usuarios WHERE Cedula = ?", (dni_usuario,))
+        if cursor.fetchone():  # Si el DNI ya está registrado
+            messagebox.showerror("ERROR", "El DNI ya está registrado anteriormente.")
             return False
     return True
 
 # Método para registrar al usuario
 def Registrar_usuario():
-    fecha_nacimiento = obtener_fecha()  # Obtener la fecha de nacimiento convertida
-    if Validar_formulario_completo() and Validar_contraseña() and Validar_dni():
+    if Validar_formulario_completo():  # Verifica si el formulario es válido
+        if not Validar_dni():  # Verifica si el DNI ya está registrado
+            return  # Si el DNI ya está registrado, no continúa con el registro
+        
+        # Si todo está bien, realiza la inserción en la base de datos
+        fecha_nacimiento = obtener_fecha()
         consulta_user = '''INSERT INTO usuarios (Cedula, Nombre, Apellido, Sexo, FechaNacimiento, Correo, Contraseña, Tipo)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
-        parameters_user = (
-            dni.get(),
-            nombres.get(),
-            apellidos.get(),
-            combo_sexo.get(),
-            fecha_nacimiento,  # Usamos la fecha convertida
-            correo.get(),
-            password.get(),
-            "Paciente"  # Asignamos tipo 'Paciente' por defecto, puedes cambiarlo si es necesario
-        )
+        parameters_user = (dni.get(), nombres.get(), apellidos.get(), combo_sexo.get(), fecha_nacimiento, correo.get(), password.get(), "Paciente")
         Ejecutar_consulta_user(consulta_user, parameters_user)
         messagebox.showinfo("REGISTRO EXITOSO", f'Bienvenido {nombres.get()} {apellidos.get()}')
         Limpiar_formulario()
