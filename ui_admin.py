@@ -199,11 +199,13 @@ def ver_citas(usuario_id):
         c = conn.cursor()
 
         # Obtener lista de pacientes
-        c.execute("SELECT id, nombre FROM usuarios")
+        c.execute("SELECT id, Nombre FROM usuarios WHERE Tipo = 'Paciente'")
         pacientes = c.fetchall()
         paciente_combo['values'] = [f"{p[1]}" for p in pacientes]
         if pacientes:
             paciente_combo.set(paciente_combo['values'][0])
+            
+        
 
         # Obtener lista de médicos
         c.execute("SELECT id, Nombre FROM medicos")
