@@ -38,7 +38,7 @@ def mostrar_login_paciente():
     icono_pass = ImageTk.PhotoImage(Image.open(ruta_pass).resize((30, 30)))  # Contraseña
     
     # Canvas para la imagen de fondo
-    canvas1 = tk.Canvas(root, width=800, height=620)
+    canvas1 = tk.Canvas(root, bg="SteelBlue3")
     canvas1.pack(fill="both", expand=True)
 
     # Titulo
@@ -80,6 +80,14 @@ def mostrar_login_paciente():
     # Botón para verificar
     boton_verificar = tk.Button(canvas1, text="Iniciar Sesión", command=login, height=2, width=15, bg="sea green", fg="white", font=("Comic Sans", 10, "bold"))
     boton_verificar.pack(pady=20)
+    
+    # Intruccion registro
+    label_reg = tk.Label(canvas1, text="¿Eres paciente nuevo? ", fg="white", font=("Comic Sans", 12, "bold italic"), bg="blue2", pady=5)
+    label_reg.pack(pady=5)
+    
+    # Botón para abrir el registro
+    boton_registro = tk.Button(canvas1, text="Registrarse", command=registrar, height=2, width=15, bg="midnight blue", fg="white", font=("Comic Sans", 10, "bold"))
+    boton_registro.pack(padx=50, pady=20)
 
     # Botón para regresar a la selección de tipo de usuario
     boton_salir = tk.Button(canvas1, text="Regresar", command= lambda: [root.destroy(), mostrar_seleccion_tipo()], height=2, width=10, bg="red", fg="white", font=("Comic Sans", 10, "bold"))
@@ -99,8 +107,9 @@ def mostrar_login_admin():
         usuario = c.fetchone()
 
         if usuario and password == usuario[7]:  # Contraseña simple para ejemplo
-            open_admin_dashboard()
+            usuario_id = usuario[0]  # Recupera el ID del usuario desde la base de datos
             root.destroy()  # Cierra la ventana de login
+            open_admin_dashboard(usuario_id)  # Pasa el usuario_id a la interfaz del paciente
         else:
             messagebox.showerror("Error", "Credenciales incorrectas")
 
@@ -116,7 +125,7 @@ def mostrar_login_admin():
     icono_pass = ImageTk.PhotoImage(Image.open(ruta_pass).resize((30, 30)))  # Contraseña
 
     # Canvas para la imagen de fondo
-    canvas1 = tk.Canvas(root, width=800, height=620)
+    canvas1 = tk.Canvas(root, bg="SteelBlue3")
     canvas1.pack(fill="both", expand=True)
 
     # Titulo
@@ -162,5 +171,8 @@ def mostrar_login_admin():
     # Botón para regresar a la selección de tipo de usuario
     boton_salir = tk.Button(canvas1, text="Regresar", command= lambda: [root.destroy(), mostrar_seleccion_tipo()], height=2, width=10, bg="red", fg="white", font=("Comic Sans", 10, "bold"))
     boton_salir.pack(pady=20)
+
+    text = tk.Label(canvas1, text="- Credenciales Admin -\n\n C.I.: 123456789 \n\n  Contraseña: admin123", fg="white", font=("Comic Sans", 14,), bg="steel blue", pady=5)
+    text.pack(pady=20)
 
     root.mainloop()

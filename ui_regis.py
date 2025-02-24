@@ -1,7 +1,5 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from PIL import ImageTk, Image
-from recursos import obtener_ruta_recurso
 from tkcalendar import DateEntry
 import sqlite3
 import re
@@ -15,7 +13,7 @@ def registrar():
     # Ventana secundaria para el registro
     regis = tk.Toplevel() 
     regis.title("REGISTRO PACIENTES")
-    regis.geometry("380x620")
+    regis.geometry("410x515")
     
     # Título
     titulo= tk.Label(regis, text="REGISTRO DE PACIENTE",fg="black",font=("Comic Sans", 13,"bold"),pady=5)
@@ -25,14 +23,6 @@ def registrar():
     marcop = tk.LabelFrame(regis,font=("Comic Sans", 10,"bold"))
     marcop.config(bd=0,pady=5)
     marcop.grid(row=2, column=0, padx=10, pady=10, sticky="n")
-    
-    ruta_datos = obtener_ruta_recurso("img_recursos/rec3.png")
-    
-    # Carga la imagen para el registro de usuario
-    imagen_registro = ImageTk.PhotoImage(Image.open(ruta_datos).resize((70, 50)))
-    
-    label_imagen= tk.Label(marcop, image= imagen_registro)
-    label_imagen.grid(row=1, column=0, pady=5)
     
     marco = tk.LabelFrame(marcop, text="Datos personales",font=("Comic Sans", 10,"bold"))
     marco.config(bd=2,pady=5)
@@ -62,7 +52,7 @@ def registrar():
     label_fecha_nacimiento = tk.Label(marco, text="Fecha de nacimiento: ", font=("Comic Sans", 10,"bold"))
     label_fecha_nacimiento.grid(row=4, column=0, sticky='s', padx=10, pady=8)
 
-    calendario = DateEntry(marco, width=22, date_pattern="dd/mm/yyyy", font=("Comic Sans", 10))
+    calendario = DateEntry(marco, width=22, date_pattern="dd/mm/yyyy", locale="es_ES", font=("Comic Sans", 10))
     calendario.grid(row=4, column=1, padx=10, pady=8)
 
     label_correo=tk.Label(marco,text="Correo electrónico: ",font=("Comic Sans", 10,"bold")).grid(row=5,column=0,sticky='s',padx=10,pady=8)
@@ -103,6 +93,7 @@ def Limpiar_formulario():
     dni.delete(0, tk.END)
     nombres.delete(0, tk.END)
     apellidos.delete(0, tk.END)
+    calendario.delete(0, tk.END)
     combo_sexo.set('')  
     correo.delete(0, tk.END)
     password.delete(0, tk.END)
