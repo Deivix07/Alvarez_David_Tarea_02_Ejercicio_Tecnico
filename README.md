@@ -25,7 +25,7 @@ Esta aplicación es una interfaz completa para gestionar citas médicas utilizan
 <div align="center">
     <img src="view/cap01.PNG" width="400">
     <img src="view/cap02.PNG" width="400">
-    <img src="view/cap02.PNG" width="400">
+    <img src="view/cap03.PNG" width="400">
 </div>
 
 ## Requisitos ✅
